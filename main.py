@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from copy import deepcopy
+from numpy.random import *
 import wx
 
 ColorDict = {0: '',
@@ -20,11 +21,34 @@ class Ants:
     def MoveAnts(self, MapData):
         for _ in range(self.DepartureNum):
             for _ in range(self.AntsNum):
-                self.AntMoveing(MapData)
+                pass
+        self.AntMoveing(MapData)
     
     def AntMoveing(self, MapData):
+        MoveList = [16, ]
         Now = MapData.index(-1)
-        print(Now)
+        CompFlag = False
+        while MapData[MoveList[-1]] != -2 and not CompFlag:
+            NextList = []
+            temp = 0
+            for Next in AntCanMove:
+                if MapData[Now+Next] == -2:
+                    MoveList.append(Now+Next)
+                    CompFlag = True
+                    break
+                elif not MapData[Now+Next] in (-200, -100, -1) and not Now+Next == MoveList[-1]:
+                    temp += MapData[Now+Next] if MapData[Now+Next] != 0 else 1
+                    NextList.append([Now+Next, temp])
+            print(NextList)
+            if not CompFlag:
+                NextRand = rand()*NextList[-1][1]
+                for List in NextList:
+                    if List[1] >= NextRand:
+                        MoveList.append(List[0])
+                        Now = List[0]
+                        break
+        print(MoveList)
+
 
 class FieldCtrl:
     def __init__(self, panel):
