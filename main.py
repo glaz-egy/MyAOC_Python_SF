@@ -8,7 +8,7 @@ ColorDict = {0: '',
             -1: 'green',
             -2: 'yellow',
             -100: 'black',
-            -200: 'blue'}
+            -200: 'red'}
 
 AntCanMove = (-15, -1, 15, 1)
 
@@ -26,8 +26,13 @@ class Ants:
     
     def AntMoveing(self, MapData):
         MoveList = [16, ]
+        OverLapList = []
+        OverLapDict = {}
         Now = MapData.index(-1)
         CompFlag = False
+        for i in range(len(MapData)):
+            if not MapData[i] in (-200, -100, -1, -2):
+                MapData[i] *= 0.5
         while MapData[MoveList[-1]] != -2 and not CompFlag:
             NextList = []
             temp = 0
@@ -39,7 +44,6 @@ class Ants:
                 elif not MapData[Now+Next] in (-200, -100, -1) and not Now+Next == MoveList[-1]:
                     temp += MapData[Now+Next] if MapData[Now+Next] != 0 else 1
                     NextList.append([Now+Next, temp])
-            print(NextList)
             if not CompFlag:
                 NextRand = rand()*NextList[-1][1]
                 for List in NextList:
@@ -47,8 +51,31 @@ class Ants:
                         MoveList.append(List[0])
                         Now = List[0]
                         break
-        print(MoveList)
+        Pherom = self.MaxPherom / (len(MoveList)-2)
+        for i in MoveList:
+            if not MapData[i] in (-200, -100, -1, -2):
+                if not i in OverLapList:
+                    OverLapList.append(i)
+                    OverLapDict[i] = 1
+                    MapData[i] += Pherom
+                else:
+                    OverLapDict[i] += 1
+                    MapData[i] = (Pherom / OverLapDict[i])
+        self.Coloring(MapData)
+        print(MapData)
 
+    def Coloring(self, MapData):
+        PheromMin = 255/max(MapData)
+        for i in range(len(MapData)):
+            if not MapData[i] in (-200, -100, -1, -2):
+                Color = '{}ffff'.format(hex(255^int(PheromMin*MapData[i])))
+                Color = Color.replace('0x', '')
+                if len(Color) != 6:
+                    Color = '0'+Color
+                Color = '#'+Color
+                print(Color)
+                Field.Button[i].SetBackgroundColour(Color)
+        print(Field.Button[46].GetBackgroundColour())
 
 class FieldCtrl:
     def __init__(self, panel):
@@ -116,13 +143,13 @@ def PushButton(event):
         Position = PositionCalc(ID)
         if Field.Button[Position].GetBackgroundColour() in ('black', 'green', 'yellow'):
             pass
-        elif Field.Button[Position].GetBackgroundColour() == 'blue':
+        elif Field.Button[Position].GetBackgroundColour() == 'red':
             Field.Button[Position].SetBackgroundColour('')
             x, y = PositionCalc(ID, XandY=True)
             MapList[y][x] = 0
             LinerMap[Position] = 0
         else:
-            Field.Button[Position].SetBackgroundColour('blue')
+            Field.Button[Position].SetBackgroundColour('red')
             x, y = PositionCalc(ID, XandY=True)
             MapList[y][x] = -200
             LinerMap[Position] = -200
